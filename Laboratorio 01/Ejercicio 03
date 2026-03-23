@@ -1,0 +1,158 @@
+/// activity_main.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    tools:context=".MainActivity">
+
+    <EditText
+        android:id="@+id/editTextCantidad"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="@string/hint_cantidad"
+        android:inputType="numberDecimal|numberSigned"
+        android:layout_marginTop="24dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <RadioGroup
+        android:id="@+id/radioGroupMoneda"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@id/editTextCantidad"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <RadioButton
+            android:id="@+id/radio0"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/dolares"
+            android:checked="true" />
+
+        <RadioButton
+            android:id="@+id/radio1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/soles" />
+    </RadioGroup>
+
+    <Button
+        android:id="@+id/btnConvertir"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="@string/convertir"
+        android:onClick="miClicManejador"
+        app:layout_constraintTop_toBottomOf="@id/radioGroupMoneda"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+///MainActivity.java
+
+package com.example.monedajava;
+
+import android.os.Bundle;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import java.util.Locale;
+
+public class MainActivity extends AppCompatActivity {
+
+    private EditText editTextCantidad;
+    private RadioButton radioDolares;
+    private RadioButton radioSoles;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        editTextCantidad = findViewById(R.id.editTextCantidad);
+        radioDolares = findViewById(R.id.radio0);
+        radioSoles = findViewById(R.id.radio1);
+    }
+
+    public void miClicManejador(View view) {
+        if (view.getId() == R.id.btnConvertir) {
+            convertirMoneda();
+        }
+    }
+
+    private void convertirMoneda() {
+        String cantidadTexto = editTextCantidad.getText().toString().trim();
+
+        if (cantidadTexto.isEmpty()) {
+            mostrarError("Ingresa una cantidad");
+            return;
+        }
+
+        double cantidad;
+        try {
+            cantidad = Double.parseDouble(cantidadTexto);
+        } catch (NumberFormatException e) {
+            mostrarError("Ingresa un número válido");
+            return;
+        }
+
+        if (cantidad <= 0) {
+            mostrarError("Ingresa un número mayor a 0");
+            return;
+        }
+
+        if (radioDolares.isChecked()) {
+            double soles = convierteDolaresASoles(cantidad);
+            mostrarResultado(String.format(Locale.US,
+                    "%.2f dólares = %.2f soles", cantidad, soles));
+        } else if (radioSoles.isChecked()) {
+            double dolares = convierteSolesADolares(cantidad);
+            mostrarResultado(String.format(Locale.US,
+                    "%.2f soles = %.2f dólares", cantidad, dolares));
+        } else {
+            mostrarError("Selecciona una moneda para convertir");
+        }
+    }
+
+    private double convierteDolaresASoles(double dolares) {
+        double tipoCambio = 3.65;
+        return dolares * tipoCambio;
+    }
+
+    private double convierteSolesADolares(double soles) {
+        double tipoCambio = 3.65;
+        return soles / tipoCambio;
+    }
+
+    private void mostrarError(String mensaje) {
+        Toast.makeText(this, mensaje, Toast.LENGTH_LONG).show();
+        editTextCantidad.requestFocus();
+    }
+
+    private void mostrarResultado(String mensaje) {
+        Toast.makeText(this, mensaje, Toast.LENGTH_LONG).show();
+    }
+}
+
+///strings.xml
+
+<resources>
+    <string name="app_name">MonedaJava</string>
+    <string name="hint_cantidad">Ingrese cantidad a convertir</string>
+    <string name="dolares">A soles</string>
+    <string name="soles">A dólares</string>
+    <string name="convertir">Calcular</string>
+</resources>
