@@ -1,3 +1,4 @@
+//activity_main.xml
 
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -94,3 +95,157 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+//strings.xml
+
+<resources>
+    <string name="app_name">ConversorMonedas</string>
+
+    <string-array name="monedas">
+        <item>Nuevo Sol (PEN)</item>
+        <item>Dólar (USD)</item>
+        <item>Euro (EUR)</item>
+        <item>Libra (GBP)</item>
+        <item>Rupia (INR)</item>
+        <item>Real (BRL)</item>
+        <item>Peso Mexicano (MXN)</item>
+        <item>Yuan (CNY)</item>
+        <item>Yen (JPY)</item>
+    </string-array>
+</resources>
+
+//MainActivity.java
+
+package com.example.conversormonedas;
+
+import android.os.Bundle;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import java.util.HashMap;
+import java.util.Locale;
+
+public class MainActivity extends AppCompatActivity {
+
+    private EditText edtCantidad;
+    private Spinner spOrigen, spDestino;
+    private Button btnConvertir;
+    private TextView txtResultado;
+
+    private final HashMap<String, Double> tasas = new HashMap<>();
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        edtCantidad = findViewById(R.id.edtCantidad);
+        spOrigen = findViewById(R.id.spOrigen);
+        spDestino = findViewById(R.id.spDestino);
+        btnConvertir = findViewById(R.id.btnConvertir);
+        txtResultado = findViewById(R.id.txtResultado);
+
+        cargarMonedas();
+        cargarTasas();
+
+        btnConvertir.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                convertirMoneda();
+            }
+        });
+    }
+
+    private void cargarMonedas() {
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+                this,
+                R.array.monedas,
+                android.R.layout.simple_spinner_item
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        spOrigen.setAdapter(adapter);
+        spDestino.setAdapter(adapter);
+
+        spOrigen.setSelection(0); // PEN
+        spDestino.setSelection(1); // USD
+    }
+
+    private void cargarTasas() {
+        // Base referencial en PEN
+        tasas.put("Nuevo Sol (PEN)", 1.00);
+        tasas.put("Dólar (USD)", 3.75);
+        tasas.put("Euro (EUR)", 4.10);
+        tasas.put("Libra (GBP)", 4.80);
+        tasas.put("Rupia (INR)", 0.045);
+        tasas.put("Real (BRL)", 0.76);
+        tasas.put("Peso Mexicano (MXN)", 0.22);
+        tasas.put("Yuan (CNY)", 0.52);
+        tasas.put("Yen (JPY)", 0.025);
+    }
+
+    private void convertirMoneda() {
+        String cantidadTexto = edtCantidad.getText().toString().trim();
+
+        if (cantidadTexto.isEmpty()) {
+            Toast.makeText(this, "Ingrese una cantidad", Toast.LENGTH_SHORT).show();
+            edtCantidad.requestFocus();
+            return;
+        }
+
+        double cantidad;
+
+        try {
+            cantidad = Double.parseDouble(cantidadTexto);
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "Ingrese un número válido", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (cantidad <= 0) {
+            Toast.makeText(this, "La cantidad debe ser mayor que 0", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String monedaOrigen = spOrigen.getSelectedItem().toString();
+        String monedaDestino = spDestino.getSelectedItem().toString();
+
+        if (monedaOrigen.equals(monedaDestino)) {
+            txtResultado.setText(String.format(Locale.US,
+                    "Resultado: %.2f %s",
+                    cantidad, obtenerCodigo(monedaDestino)));
+            return;
+        }
+
+        double tasaOrigen = tasas.get(monedaOrigen);
+        double tasaDestino = tasas.get(monedaDestino);
+
+        // Convertir primero a PEN y luego a destino
+        double cantidadEnPEN = cantidad * tasaOrigen;
+        double resultado = cantidadEnPEN / tasaDestino;
+
+        txtResultado.setText(String.format(Locale.US,
+                "Resultado: %.2f %s",
+                resultado, obtenerCodigo(monedaDestino)));
+    }
+
+    private String obtenerCodigo(String moneda) {
+        if (moneda.contains("PEN")) return "PEN";
+        if (moneda.contains("USD")) return "USD";
+        if (moneda.contains("EUR")) return "EUR";
+        if (moneda.contains("GBP")) return "GBP";
+        if (moneda.contains("INR")) return "INR";
+        if (moneda.contains("BRL")) return "BRL";
+        if (moneda.contains("MXN")) return "MXN";
+        if (moneda.contains("CNY")) return "CNY";
+        if (moneda.contains("JPY")) return "JPY";
+        return "";
+    }
+}
