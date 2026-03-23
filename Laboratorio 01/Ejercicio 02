@@ -1,0 +1,204 @@
+//activity_main.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/txtTitulo"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Tipos de Pizzas"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <GridView
+        android:id="@+id/gridPizzas"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
+        android:numColumns="2"
+        android:verticalSpacing="12dp"
+        android:horizontalSpacing="12dp"
+        android:stretchMode="columnWidth"
+        app:layout_constraintTop_toBottomOf="@id/txtTitulo"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+///item_pizza.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="180dp"
+    android:background="#FFF8E1"
+    android:padding="8dp">
+
+    <ImageView
+        android:id="@+id/imgPizza"
+        android:layout_width="0dp"
+        android:layout_height="120dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/txtNombrePizza"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Pizza"
+        android:textAlignment="center"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/imgPizza"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+///Pizza.java
+
+package com.example.pizzasgridview;
+
+public class Pizza {
+    private final String nombre;
+    private final int imagen;
+
+    public Pizza(String nombre, int imagen) {
+        this.nombre = nombre;
+        this.imagen = imagen;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public int getImagen() {
+        return imagen;
+    }
+}
+
+///MainActivity.java
+
+package com.example.pizzasgridview;
+
+import android.os.Bundle;
+import android.widget.AdapterView;
+import android.widget.GridView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import java.util.ArrayList;
+
+public class MainActivity extends AppCompatActivity {
+
+    private GridView gridPizzas;
+    private ArrayList<Pizza> listaPizzas;
+    private PizzaAdapter adapter;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        gridPizzas = findViewById(R.id.gridPizzas);
+
+        listaPizzas = new ArrayList<>();
+        listaPizzas.add(new Pizza("Hawaiana", R.drawable.pizza_hawaiana));
+        listaPizzas.add(new Pizza("Pepperoni", R.drawable.pizza_pepperoni));
+        listaPizzas.add(new Pizza("Americana", R.drawable.pizza_americana));
+        listaPizzas.add(new Pizza("Vegetariana", R.drawable.pizza_vegetariana));
+        listaPizzas.add(new Pizza("Cuatro Quesos", R.drawable.pizza_cuatro_quesos));
+        listaPizzas.add(new Pizza("Suprema", R.drawable.pizza_suprema));
+
+        adapter = new PizzaAdapter(this, listaPizzas);
+        gridPizzas.setAdapter(adapter);
+
+        gridPizzas.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, android.view.View view, int position, long id) {
+                Pizza pizzaSeleccionada = listaPizzas.get(position);
+                Toast.makeText(MainActivity.this,
+                        "Pizza: " + pizzaSeleccionada.getNombre(),
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+}
+
+///PizzaAdapter.java
+
+package com.example.pizzasgridview;
+
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import java.util.ArrayList;
+
+public class PizzaAdapter extends BaseAdapter {
+
+    private final Context context;
+    private final ArrayList<Pizza> listaPizzas;
+    private final LayoutInflater inflater;
+
+    public PizzaAdapter(Context context, ArrayList<Pizza> listaPizzas) {
+        this.context = context;
+        this.listaPizzas = listaPizzas;
+        this.inflater = LayoutInflater.from(context);
+    }
+
+    @Override
+    public int getCount() {
+        return listaPizzas.size();
+    }
+
+    @Override
+    public Object getItem(int position) {
+        return listaPizzas.get(position);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        View vista = convertView;
+
+        if (vista == null) {
+            vista = inflater.inflate(R.layout.item_pizza, parent, false);
+        }
+
+        ImageView imgPizza = vista.findViewById(R.id.imgPizza);
+        TextView txtNombrePizza = vista.findViewById(R.id.txtNombrePizza);
+
+        Pizza pizza = listaPizzas.get(position);
+
+        imgPizza.setImageResource(pizza.getImagen());
+        txtNombrePizza.setText(pizza.getNombre());
+
+        return vista;
+    }
+}
