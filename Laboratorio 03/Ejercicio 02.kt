@@ -10,7 +10,7 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <!-- ProgressBar que aparecerá durante la carga -->
+    <!-- ProgressBar que aparece durante la carga -->
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
@@ -167,7 +167,7 @@ class CurrencyConversionActivity : AppCompatActivity() {
     android:padding="24dp"
     tools:context=".CurrencyConversionActivity">
 
-    <!-- ProgressBar que aparecerá durante la carga -->
+    <!-- ProgressBar que aparece durante la carga -->
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
@@ -255,7 +255,7 @@ class SecondActivity : AppCompatActivity() {
         Handler().postDelayed({
             progressBar.visibility = ProgressBar.GONE
             Toast.makeText(this, "Carga Completa", Toast.LENGTH_SHORT).show()
-        }, 2000)  // 2 segundos de espera (simulación de carga)
+        }, 2000)  // 2 segundos de espera 
     }
 }
 
@@ -269,7 +269,7 @@ class SecondActivity : AppCompatActivity() {
     android:layout_height="match_parent"
     tools:context=".SecondActivity">
 
-    <!-- ProgressBar que aparecerá durante la carga -->
+    <!-- ProgressBar que aparece durante la carga -->
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
