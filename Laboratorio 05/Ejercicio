@@ -1,1 +1,190 @@
+///activity_main.xml
 
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical" />
+
+</LinearLayout>
+
+///item_product.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:layout_marginBottom="8dp">
+
+    <TextView
+        android:id="@+id/txtNombre"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Nombre del producto"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/txtCantidad"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Cantidad"
+        android:textSize="14sp"
+        android:layout_marginEnd="16dp" />
+
+    <TextView
+        android:id="@+id/txtPrecio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Precio"
+        android:textSize="14sp" />
+</LinearLayout>
+
+
+
+///Producto.kt
+
+package com.example.catalogoproductos
+
+data class Producto(
+    val nombre: String,
+    val cantidad: Int,
+    val precio: Double
+)
+
+
+///strings.xml
+
+<resources>
+    <string name="app_name">CatalogoProductos</string>
+    <string name="producto_cantidad">Cantidad: %1$d</string>
+    <string name="producto_precio">S/ %1$.2f</string>
+</resources>
+
+
+///ProductoAdapter.kt
+
+package com.example.catalogoproductos
+
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
+
+class ProductoAdapter(private val productos: List<Producto>) : RecyclerView.Adapter<ProductoAdapter.ProductoViewHolder>() {
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProductoViewHolder {
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_producto, parent, false)
+        return ProductoViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: ProductoViewHolder, position: Int) {
+        val producto = productos[position]
+        holder.txtNombre.text = producto.nombre
+        holder.txtCantidad.text = "Cantidad: ${producto.cantidad}"
+        holder.txtPrecio.text = "S/ ${producto.precio}"
+    }
+
+    override fun getItemCount(): Int = productos.size
+
+    class ProductoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val txtNombre: TextView = itemView.findViewById(R.id.txtNombre)
+        val txtCantidad: TextView = itemView.findViewById(R.id.txtCantidad)
+        val txtPrecio: TextView = itemView.findViewById(R.id.txtPrecio)
+    }
+}
+
+
+///MainActivity.kt
+
+package com.example.catalogoproductos
+
+import android.content.SharedPreferences
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+
+class MainActivity : AppCompatActivity() {
+
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var prefs: SharedPreferences
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        recyclerView = findViewById(R.id.recyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+
+        prefs = getSharedPreferences("com.example.catalogoproductos_preferences", MODE_PRIVATE)
+
+        val productos = cargarProductos()
+
+        val adapter = ProductoAdapter(productos)
+        recyclerView.adapter = adapter
+    }
+
+    private fun cargarProductos(): List<Producto> {
+        val productos = mutableListOf<Producto>()
+
+        // Cargar los productos desde SharedPreferences
+        val producto1 = Producto("Producto 1", 10, 5.99)
+        val producto2 = Producto("Producto 2", 5, 8.50)
+        val producto3 = Producto("Producto 3", 20, 3.75)
+
+        productos.add(producto1)
+        productos.add(producto2)
+        productos.add(producto3)
+
+        // Guardar en SharedPreferences (como ejemplo)
+        val editor = prefs.edit()
+        editor.putString("producto1", producto1.nombre)
+        editor.putInt("cantidad1", producto1.cantidad)
+        editor.putFloat("precio1", producto1.precio.toFloat())
+        editor.apply()
+
+        return productos
+    }
+}
+
+
+
+///AndroidManifest.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.CatalogoProductos">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
