@@ -1,1 +1,276 @@
+// activity_main.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    tools:context=".MainActivity">
+
+    <!-- Boton para cargar la pantalla de preferencias -->
+    <Button
+        android:id="@+id/btnCargar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pantalla de carga de preferencias" />
+
+    <!-- Boton para mostrar las preferencias -->
+    <Button
+        android:id="@+id/btnMostrar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Muestra los valores de las preferencias" />
+
+    <!-- Campo de texto donde el usuario puede escribir -->
+    <EditText
+        android:id="@+id/txtString"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Escribe algo..." />
+
+    <!-- Boton para modificar el valor de las preferencias -->
+    <Button
+        android:id="@+id/btnModificar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Modifica el valor de las preferencias" />
+
+</LinearLayout>
+
+
+
+//MainActiviity.kt
+
+package com.example.usopreferencias
+
+import android.content.Intent
+import android.content.SharedPreferences
+import android.os.Bundle
+import android.widget.Button
+import android.widget.EditText
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+
+class MainActivity : AppCompatActivity() {
+    private lateinit var txtString: EditText
+    private lateinit var prefs: SharedPreferences
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        txtString = findViewById(R.id.txtString)
+
+        // Usamos SharedPreferences para almacenar y acceder a las preferencias
+        prefs = getSharedPreferences(
+            "com.example.usopreferencias_preferences", MODE_PRIVATE
+        )
+
+        // Boton para abrir la pantalla de preferencias
+        findViewById<Button>(R.id.btnCargar).setOnClickListener {
+            startActivity(Intent(this, AppPreferenciasActivity::class.java))
+        }
+
+        // Boton para mostrar las preferencias
+        findViewById<Button>(R.id.btnMostrar).setOnClickListener {
+            val checkbox = if (prefs.getBoolean("checkboxPref", false)) "marcado" else "no marcado"
+            val editText = prefs.getString("editTextPref", "sin valor")
+            val secondEdit = prefs.getString("secondEditTextPref", "sin valor")
+
+            // Mostrar los valores en un Toast
+            Toast.makeText(this,
+                "Checkbox: $checkbox\nEditText: $editText\nSecondEdit: $secondEdit",
+                Toast.LENGTH_LONG).show()
+        }
+
+        // Boton para modificar el valor de las preferencias
+        findViewById<Button>(R.id.btnModificar).setOnClickListener {
+            val nuevoValor = txtString.text.toString()
+
+            // Modificar el valor de las preferencias
+            prefs.edit().putString("editTextPref", nuevoValor).apply()
+
+            // Mostrar mensaje de confirmacion
+            Toast.makeText(this, "Valor modificado: $nuevoValor", Toast.LENGTH_SHORT).show()
+        }
+    }
+}
+
+
+
+//com.example.usopreferencias_preferences.xml
+
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <boolean name="checkboxPref" value="true" />
+    <string name="editTextPref">Bruh</string>
+</map>
+
+
+//build.gradle.kts///////
+
+// plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+}
+
+android {
+    namespace = "com.example.usopreferencias"
+    compileSdk {
+        version = release(36)
+    }
+
+    defaultConfig {
+        applicationId = "com.example.usopreferencias"
+        minSdk = 24
+        targetSdk = 36
+        versionCode = 1
+        versionName = "1.0"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+    kotlinOptions {
+        jvmTarget = "11"
+    }
+}
+
+dependencies {
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.constraintlayout)
+    implementation("androidx.preference:preference:1.1.1")
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+}
+
+
+
+// AndroidManifest.xml
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="UsoPreferencias"
+        android:theme="@style/Theme.UsoPreferencias">
+
+        <!-- Actividad principal -->
+        <activity android:name=".MainActivity" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Segunda actividad agregada -->
+        <activity
+            android:name=".AppPreferenciasActivity"
+            android:label="UsoPreferencias"
+            android:exported="false" />
+    </application>
+</manifest>
+
+
+
+//misapppreferencias.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Primera categoría de preferencias -->
+    <PreferenceCategory android:title="Categoría 1">
+        <CheckBoxPreference
+            android:key="checkboxPref"
+            android:title="Checkbox"
+            android:summary="Verdadero o Falso"
+            android:defaultValue="false" />
+    </PreferenceCategory>
+
+    <!-- Segunda categoria de preferencias -->
+    <PreferenceCategory android:title="Categoría 2">
+        <EditTextPreference
+            android:key="editTextPref"
+            android:title="Editor de Texto"
+            android:summary="Ingresa una cadena"
+            android:defaultValue="[Ingrese una cadena aquí]" />
+
+        <PreferenceScreen
+            android:key="secondPrefScreenPref"
+            android:title="Segunda pantalla de preferencias"
+            android:summary="Haz clic aquí para ir a la Segunda pantalla">
+
+            <EditTextPreference
+                android:key="secondEditTextPref"
+                android:title="Edit Text (segunda pantalla)"
+                android:summary="Ingresa una cadena" />
+        </PreferenceScreen>
+    </PreferenceCategory>
+
+</PreferenceScreen>
+
+
+
+//AppPreferenciasActivity.kt
+
+package com.example.usopreferencias
+
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+
+class AppPreferenciasActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_preferencias)
+
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.fragment_container, AppPreferenciasFragment())
+            .commit()
+    }
+}
+
+
+//activity_preferencias.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/fragment_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" />
+
+
+//AppPreferenciasFragment.kt
+
+package com.example.usopreferencias
+
+import android.os.Bundle
+import androidx.preference.PreferenceFragmentCompat
+
+class AppPreferenciasFragment : PreferenceFragmentCompat() {
+
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        setPreferencesFromResource(R.xml.misapppreferencias, rootKey)
+    }
+}
 
