@@ -1,0 +1,249 @@
+/// Parte A - Theme.kt
+
+package com.ucsm.laboratorio06.ui.theme
+
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
+
+private val LightColors = lightColorScheme(
+    primary = Color(0xFF6750A4),
+    onPrimary = Color.White,
+    primaryContainer = Color(0xFFEADDFF),
+    onPrimaryContainer = Color(0xFF21005D),
+    secondary = Color(0xFF625B71),
+    surface = Color(0xFFFEF7FF)
+)
+
+private val DarkColors = darkColorScheme(
+    primary = Color(0xFFD0BCFF),
+    onPrimary = Color(0xFF381E72),
+    primaryContainer = Color(0xFF4F378B),
+    onPrimaryContainer = Color(0xFFEADDFF)
+)
+
+@Composable
+fun Laboratorio06Theme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    content: @Composable () -> Unit
+) {
+    MaterialTheme(
+        colorScheme = if (darkTheme) DarkColors else LightColors,
+        content = content
+    )
+}
+
+///MainActivity.kt
+
+package com.ucsm.laboratorio06
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.ucsm.laboratorio06.ui.theme.Laboratorio06Theme
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            Laboratorio06Theme {
+                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                    FormularioUsuario(modifier = Modifier.padding(innerPadding))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun FormularioUsuario(modifier: Modifier = Modifier) {
+    var nombre by remember { mutableStateOf("") }
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp, vertical = 200.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        OutlinedTextField(
+            value = nombre,
+            onValueChange = { nuevo -> if (nuevo.length <= 8) nombre = nuevo },
+            label = { Text("Ingresa tu nombre") },
+            supportingText = { Text("Aquí ingresa tu nombre · ${nombre.length}/8") },
+            trailingIcon = {
+                if (nombre.isNotEmpty()) {
+                    IconButton(onClick = { nombre = "" }) {
+                        Icon(Icons.Default.Clear, contentDescription = "Limpiar")
+                    }
+                }
+            },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun FormularioUsuarioPreview() {
+    Laboratorio06Theme { FormularioUsuario() }
+}
+
+/// Parte B — themes.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Base.Theme.Laboratorio06" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/md_theme_primary</item>
+        <item name="colorOnPrimary">@color/md_theme_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/md_theme_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/md_theme_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/md_theme_secondary</item>
+        <item name="colorOnSecondary">@color/md_theme_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/md_theme_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/md_theme_onSecondaryContainer</item>
+        <item name="colorSurface">@color/md_theme_surface</item>
+        <item name="colorOnSurface">@color/md_theme_onSurface</item>
+    </style>
+    <style name="Theme.Laboratorio06" parent="Base.Theme.Laboratorio06" />
+</resources>
+
+/// colors.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Base.Theme.Laboratorio06" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/md_theme_primary</item>
+        <item name="colorOnPrimary">@color/md_theme_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/md_theme_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/md_theme_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/md_theme_secondary</item>
+        <item name="colorOnSecondary">@color/md_theme_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/md_theme_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/md_theme_onSecondaryContainer</item>
+        <item name="colorSurface">@color/md_theme_surface</item>
+        <item name="colorOnSurface">@color/md_theme_onSurface</item>
+    </style>
+    <style name="Theme.Laboratorio06" parent="Base.Theme.Laboratorio06" />
+</resources>
+
+/// activity_main.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilNombre"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="200dp"
+        android:layout_marginEnd="16dp"
+        android:hint="Ingresa tu nombre"
+        app:helperText="Aquí ingresa tu nombre"
+        app:counterEnabled="true"
+        app:counterMaxLength="8"
+        app:endIconMode="clear_text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etNombre"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPersonName" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+/// Parte C — lib/main.dart
+
+import 'package:flutter/material.dart';
+
+void main() => runApp(const PrimeraApp());
+
+class PrimeraApp extends StatelessWidget {
+  const PrimeraApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Primera App',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlue),
+      ),
+      home: const PaginaInicio(),
+    );
+  }
+}
+
+class PaginaInicio extends StatefulWidget {
+  const PaginaInicio({super.key});
+
+  @override
+  State<PaginaInicio> createState() => _PaginaInicioState();
+}
+
+class _PaginaInicioState extends State<PaginaInicio> {
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Primera app Flutter'),
+        backgroundColor: colors.primaryContainer,
+        foregroundColor: colors.onPrimaryContainer,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            TextField(
+              controller: _controller,
+              autofocus: true,
+              maxLength: 15,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.account_box),
+                labelText: 'Usuario',
+                helperText: 'Nombre de usuario',
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
