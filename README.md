@@ -32,3 +32,28 @@ usando Room (Entity, DAO, Database) con corutinas y ViewBinding.
 ### Eliminar Cita
 <img width="716" height="1600" alt="image" src="https://github.com/user-attachments/assets/38f81ed1-bcfc-411a-bed5-57410c119710" />
 
+
+## Ejercicio 03 - Flow + repeatOnLifecycle
+
+## La lista se actualiza en tiempo real automáticamente 
+cada vez que hay un cambio en la base de datos.
+
+## App con lista de anterior actividad 
+<img width="275" height="120" alt="image" src="https://github.com/user-attachments/assets/0cce53b1-dd06-49dc-a3c7-bfa198232c39" />
+
+
+## Registrar articulo (Monitor Alienware)
+<img width="716" height="1600" alt="image" src="https://github.com/user-attachments/assets/e51a9c0b-59f4-4baa-8dcd-3a43eac7ecfb" />
+
+## Registrar otro articulo
+<img width="716" height="1600" alt="image" src="https://github.com/user-attachments/assets/a22e581b-7652-4650-a1a3-07e082429c6e" />
+
+## Modificar articulo 
+<img width="716" height="1600" alt="image" src="https://github.com/user-attachments/assets/63cc09e9-f6c6-4fa0-ace9-9c74abfd0388" />
+
+## Eliminar uno (articulo 2)
+<img width="716" height="1600" alt="image" src="https://github.com/user-attachments/assets/799b2eb0-5e8a-491a-90e3-2b2d5bba8e1a" />
+<img width="716" height="1600" alt="image" src="https://github.com/user-attachments/assets/c5d8cf68-382f-48ed-a497-a1a614930857" />
+
+
+
