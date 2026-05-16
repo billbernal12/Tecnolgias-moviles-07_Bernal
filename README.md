@@ -18,13 +18,17 @@ usando Room (Entity, DAO, Database) con corutinas y ViewBinding.
 
 ### Registrar Cita
 <img width="716" height="1600" alt="image" src="https://github.com/user-attachments/assets/79c13986-fb33-463d-8d4a-ff7be27fa1de" />
+<img width="716" height="1600" alt="image" src="https://github.com/user-attachments/assets/62b7b0ad-1ee0-4987-8d9a-90f126c4d502" />
 
 
 ### Buscar Cita
-(imagen 2)
+<img width="716" height="1600" alt="image" src="https://github.com/user-attachments/assets/dd8d5327-9f62-4632-a7a5-6a4826340a97" />
+
 
 ### Modificar Cita
-(imagen 3)
+<img width="716" height="1600" alt="image" src="https://github.com/user-attachments/assets/0a9823c4-c6b7-4e17-8b6a-d84c309f9f52" />
+
 
 ### Eliminar Cita
-(imagen 4)
+<img width="716" height="1600" alt="image" src="https://github.com/user-attachments/assets/38f81ed1-bcfc-411a-bed5-57410c119710" />
+
