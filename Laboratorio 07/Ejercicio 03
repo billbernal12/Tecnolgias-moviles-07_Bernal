@@ -1,0 +1,352 @@
+///ArticuloDao.kt
+
+package com.ucsm.basededatos.data
+
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
+
+@Dao
+interface ArticuloDao {
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertar(articulo: Articulo): Long
+
+    @Update
+    suspend fun actualizar(articulo: Articulo): Int
+
+    @Delete
+    suspend fun eliminar(articulo: Articulo): Int
+
+    @Query("DELETE FROM articulos WHERE codigo = :codigo")
+    suspend fun eliminarPorCodigo(codigo: Int): Int
+
+    @Query("SELECT * FROM articulos WHERE codigo = :codigo LIMIT 1")
+    suspend fun buscarPorCodigo(codigo: Int): Articulo?
+
+    @Query("SELECT * FROM articulos ORDER BY codigo ASC")
+    fun listarTodos(): Flow<List<Articulo>>
+}
+
+
+///activity_main.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingTop="35dp"
+    tools:context=".MainActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <View
+            android:id="@+id/topview"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:background="#0099ff"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Base de datos"
+            android:textColor="@color/white"
+            android:textSize="34sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textInputLayout01"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="100dp"
+            android:layout_marginEnd="16dp"
+            android:hint="@string/txt_codigo"
+            app:boxCornerRadiusBottomEnd="10dp"
+            app:boxCornerRadiusBottomStart="10dp"
+            app:boxCornerRadiusTopEnd="10dp"
+            app:boxCornerRadiusTopStart="10dp"
+            app:endIconMode="clear_text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/txt_codigo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textInputLayout02"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="170dp"
+            android:layout_marginEnd="16dp"
+            android:hint="@string/txt_descripcion"
+            app:endIconMode="clear_text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/txt_descripcion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textInputLayout03"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="240dp"
+            android:layout_marginEnd="16dp"
+            android:hint="@string/txt_precio"
+            app:endIconMode="clear_text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/txt_precio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRegistrar"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="320dp"
+            android:text="@string/BotonRegistrar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnBuscar"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/BotonBuscar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnRegistrar" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnModificar"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/BotonModificar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnBuscar" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnEliminar"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/BotonEliminar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnModificar" />
+
+        <TextView
+            android:id="@+id/tvLista"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="24dp"
+            android:background="#E3F2FD"
+            android:padding="12dp"
+            android:text="Lista de artículos..."
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnEliminar" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>
+
+
+
+///MainActivity.kt
+
+package com.ucsm.basededatos
+
+import android.os.Bundle
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import com.ucsm.basededatos.data.AppDatabase
+import com.ucsm.basededatos.data.Articulo
+import com.ucsm.basededatos.data.ArticuloDao
+import com.ucsm.basededatos.databinding.ActivityMainBinding
+import kotlinx.coroutines.launch
+
+class MainActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivityMainBinding
+    private lateinit var dao: ArticuloDao
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        dao = AppDatabase.getInstance(this).articuloDao()
+
+        binding.btnRegistrar.setOnClickListener { registrar() }
+        binding.btnBuscar.setOnClickListener { buscar() }
+        binding.btnModificar.setOnClickListener { modificar() }
+        binding.btnEliminar.setOnClickListener { eliminar() }
+
+        // Flow + repeatOnLifecycle
+        // Observa cambios en tiempo real sin bloquear la UI
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                dao.listarTodos().collect { articulos ->
+                    if (articulos.isEmpty()) {
+                        binding.tvLista.text = "No hay artículos registrados"
+                    } else {
+                        val texto = articulos.joinToString("\n") {
+                            "ID: ${it.codigo} | ${it.descripcion} | S/.${it.precio}"
+                        }
+                        binding.tvLista.text = texto
+                    }
+                }
+            }
+        }
+    }
+
+    private fun toast(mensaje: String) {
+        Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun limpiarCampos() {
+        binding.txtCodigo.setText("")
+        binding.txtDescripcion.setText("")
+        binding.txtPrecio.setText("")
+    }
+
+    private fun registrar() {
+        val codigo = binding.txtCodigo.text.toString()
+        val descripcion = binding.txtDescripcion.text.toString()
+        val precio = binding.txtPrecio.text.toString()
+
+        if (codigo.isEmpty() || descripcion.isEmpty() || precio.isEmpty()) {
+            toast("Debe llenar todos los campos")
+            return
+        }
+
+        val articulo = Articulo(
+            codigo = codigo.toInt(),
+            descripcion = descripcion,
+            precio = precio.toDouble()
+        )
+
+        lifecycleScope.launch {
+            try {
+                dao.insertar(articulo)
+                limpiarCampos()
+                toast("Registro exitoso")
+            } catch (e: Exception) {
+                toast("Error al registrar: ${e.message}")
+            }
+        }
+    }
+
+    private fun buscar() {
+        val codigo = binding.txtCodigo.text.toString()
+        if (codigo.isEmpty()) {
+            toast("Debe introducir el código del artículo")
+            return
+        }
+
+        lifecycleScope.launch {
+            val articulo = dao.buscarPorCodigo(codigo.toInt())
+            if (articulo != null) {
+                binding.txtDescripcion.setText(articulo.descripcion)
+                binding.txtPrecio.setText(articulo.precio.toString())
+            } else {
+                toast("No existe el artículo")
+            }
+        }
+    }
+
+    private fun modificar() {
+        val codigo = binding.txtCodigo.text.toString()
+        val descripcion = binding.txtDescripcion.text.toString()
+        val precio = binding.txtPrecio.text.toString()
+
+        if (codigo.isEmpty() || descripcion.isEmpty() || precio.isEmpty()) {
+            toast("Debe llenar todos los campos")
+            return
+        }
+
+        val articulo = Articulo(
+            codigo = codigo.toInt(),
+            descripcion = descripcion,
+            precio = precio.toDouble()
+        )
+
+        lifecycleScope.launch {
+            val filas = dao.actualizar(articulo)
+            if (filas == 1) {
+                toast("Artículo modificado correctamente")
+            } else {
+                toast("El artículo no existe")
+            }
+        }
+    }
+
+    private fun eliminar() {
+        val codigo = binding.txtCodigo.text.toString()
+        if (codigo.isEmpty()) {
+            toast("Debe introducir el código del artículo")
+            return
+        }
+
+        lifecycleScope.launch {
+            val filas = dao.eliminarPorCodigo(codigo.toInt())
+            limpiarCampos()
+            if (filas == 1) {
+                toast("Artículo eliminado exitosamente")
+            } else {
+                toast("El artículo no existe")
+            }
+        }
+    }
+}
+
