@@ -56,7 +56,7 @@ cada vez que hay un cambio en la base de datos.
 <img width="716" height="1600" alt="image" src="https://github.com/user-attachments/assets/c5d8cf68-382f-48ed-a497-a1a614930857" />
 
 
-## Ejercicio 32 - Patrón Repository
+## Ejercicio 04 - Patrón Repository
 
 ## Se implementó el patrón Repository como capa intermedia 
 entre la Activity y el DAO, separando responsabilidades:
