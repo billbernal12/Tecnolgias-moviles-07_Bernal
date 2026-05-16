@@ -1,0 +1,510 @@
+
+///buidl.gradkle.kts
+
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    id("com.google.devtools.ksp") version "2.0.21-1.0.28"
+}
+
+android {
+    namespace = "com.ucsm.recuperacitas"
+    compileSdk = 36
+
+    defaultConfig {
+        applicationId = "com.ucsm.recuperacitas"
+        minSdk = 24
+        targetSdk = 36
+        versionCode = 1
+        versionName = "1.0"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+    kotlinOptions {
+        jvmTarget = "11"
+    }
+    buildFeatures {
+        viewBinding = true
+    }
+}
+
+dependencies {
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.constraintlayout)
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+
+    // Room
+    val roomVersion = "2.6.1"
+    implementation("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
+    ksp("androidx.room:room-compiler:$roomVersion")
+
+    // Coroutines + Lifecycle
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
+
+    // Material 3
+    implementation("com.google.android.material:material:1.12.0")
+}
+
+///Cita.kt
+
+package com.ucsm.recuperacitas.data
+
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "citas")
+data class Cita(
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
+    val especialista: String,
+    val descripcion: String,
+    val fecha: String,
+    val estado: String
+)
+
+
+///CitaDao.kt
+
+package com.ucsm.recuperacitas.data
+
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Update
+
+@Dao
+interface CitaDao {
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertar(cita: Cita): Long
+
+    @Update
+    suspend fun actualizar(cita: Cita): Int
+
+    @Query("DELETE FROM citas WHERE id = :id")
+    suspend fun eliminarPorId(id: Int): Int
+
+    @Query("SELECT * FROM citas WHERE id = :id LIMIT 1")
+    suspend fun buscarPorId(id: Int): Cita?
+
+    @Query("SELECT * FROM citas ORDER BY id ASC")
+    suspend fun listarTodos(): List<Cita>
+}
+
+
+///AppDatabase.kt
+
+package com.ucsm.recuperacitas.data
+
+import android.content.Context
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+
+@Database(
+    entities = [Cita::class],
+    version = 1,
+    exportSchema = false
+)
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun citaDao(): CitaDao
+
+    companion object {
+        @Volatile
+        private var INSTANCE: AppDatabase? = null
+
+        fun getInstance(context: Context): AppDatabase {
+            return INSTANCE ?: synchronized(this) {
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    "recupera.db"
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
+                INSTANCE = instance
+                instance
+            }
+        }
+    }
+}
+
+
+///strings.xml
+
+<resources>
+    <string name="app_name">RecuperaCitas</string>
+    <string name="txt_id">ID de la cita</string>
+    <string name="txt_especialista">Nombre del especialista</string>
+    <string name="txt_descripcion">Descripción / Motivo</string>
+    <string name="txt_fecha">Fecha (dd/mm/aaaa)</string>
+    <string name="txt_estado">Estado (Pendiente / Confirmada)</string>
+    <string name="btn_registrar">Registrar Cita</string>
+    <string name="btn_buscar">Buscar Cita</string>
+    <string name="btn_modificar">Modificar Cita</string>
+    <string name="btn_eliminar">Eliminar Cita</string>
+</resources>
+
+
+///activity_main.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F5F5">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="24dp">
+
+        <View
+            android:id="@+id/topView"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:background="#1565C0"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tvTitulo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Recupera+ Citas"
+            android:textColor="@color/white"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="@+id/topView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/topView" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layoutId"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="80dp"
+            android:layout_marginEnd="16dp"
+            android:hint="@string/txt_id"
+            app:endIconMode="clear_text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/txtId"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layoutEspecialista"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="16dp"
+            android:hint="@string/txt_especialista"
+            app:endIconMode="clear_text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/layoutId">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/txtEspecialista"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layoutDescripcion"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="16dp"
+            android:hint="@string/txt_descripcion"
+            app:endIconMode="clear_text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/layoutEspecialista">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/txtDescripcion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layoutFecha"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="16dp"
+            android:hint="@string/txt_fecha"
+            app:endIconMode="clear_text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/layoutDescripcion">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/txtFecha"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layoutEstado"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="16dp"
+            android:hint="@string/txt_estado"
+            app:endIconMode="clear_text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/layoutFecha">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/txtEstado"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRegistrar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginEnd="16dp"
+            android:text="@string/btn_registrar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/layoutEstado" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnBuscar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:text="@string/btn_buscar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnRegistrar" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnModificar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:text="@string/btn_modificar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnBuscar" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnEliminar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:text="@string/btn_eliminar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnModificar" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>
+
+
+
+///MainActivy.kt
+
+package com.ucsm.recuperacitas
+
+import android.os.Bundle
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import com.ucsm.recuperacitas.data.AppDatabase
+import com.ucsm.recuperacitas.data.Cita
+import com.ucsm.recuperacitas.data.CitaDao
+import com.ucsm.recuperacitas.databinding.ActivityMainBinding
+import kotlinx.coroutines.launch
+
+class MainActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivityMainBinding
+    private lateinit var dao: CitaDao
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        dao = AppDatabase.getInstance(this).citaDao()
+
+        binding.btnRegistrar.setOnClickListener { registrar() }
+        binding.btnBuscar.setOnClickListener { buscar() }
+        binding.btnModificar.setOnClickListener { modificar() }
+        binding.btnEliminar.setOnClickListener { eliminar() }
+    }
+
+    private fun toast(mensaje: String) {
+        Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun limpiarCampos() {
+        binding.txtId.setText("")
+        binding.txtEspecialista.setText("")
+        binding.txtDescripcion.setText("")
+        binding.txtFecha.setText("")
+        binding.txtEstado.setText("")
+    }
+
+    private fun registrar() {
+        val especialista = binding.txtEspecialista.text.toString()
+        val descripcion = binding.txtDescripcion.text.toString()
+        val fecha = binding.txtFecha.text.toString()
+        val estado = binding.txtEstado.text.toString()
+
+        if (especialista.isEmpty() || descripcion.isEmpty() ||
+            fecha.isEmpty() || estado.isEmpty()) {
+            toast("Debe llenar todos los campos")
+            return
+        }
+
+        val cita = Cita(
+            especialista = especialista,
+            descripcion = descripcion,
+            fecha = fecha,
+            estado = estado
+        )
+
+        lifecycleScope.launch {
+            try {
+                val id = dao.insertar(cita)
+                limpiarCampos()
+                toast("Cita registrada con ID: $id")
+            } catch (e: Exception) {
+                toast("Error al registrar: ${e.message}")
+            }
+        }
+    }
+
+    private fun buscar() {
+        val idTexto = binding.txtId.text.toString()
+        if (idTexto.isEmpty()) {
+            toast("Ingrese el ID de la cita")
+            return
+        }
+
+        lifecycleScope.launch {
+            val cita = dao.buscarPorId(idTexto.toInt())
+            if (cita != null) {
+                binding.txtEspecialista.setText(cita.especialista)
+                binding.txtDescripcion.setText(cita.descripcion)
+                binding.txtFecha.setText(cita.fecha)
+                binding.txtEstado.setText(cita.estado)
+            } else {
+                toast("No existe la cita con ese ID")
+            }
+        }
+    }
+
+    private fun modificar() {
+        val idTexto = binding.txtId.text.toString()
+        val especialista = binding.txtEspecialista.text.toString()
+        val descripcion = binding.txtDescripcion.text.toString()
+        val fecha = binding.txtFecha.text.toString()
+        val estado = binding.txtEstado.text.toString()
+
+        if (idTexto.isEmpty() || especialista.isEmpty() || descripcion.isEmpty() ||
+            fecha.isEmpty() || estado.isEmpty()) {
+            toast("Debe llenar todos los campos")
+            return
+        }
+
+        val cita = Cita(
+            id = idTexto.toInt(),
+            especialista = especialista,
+            descripcion = descripcion,
+            fecha = fecha,
+            estado = estado
+        )
+
+        lifecycleScope.launch {
+            val filas = dao.actualizar(cita)
+            if (filas == 1) {
+                toast("Cita modificada correctamente")
+            } else {
+                toast("No existe la cita con ese ID")
+            }
+        }
+    }
+
+    private fun eliminar() {
+        val idTexto = binding.txtId.text.toString()
+        if (idTexto.isEmpty()) {
+            toast("Ingrese el ID de la cita")
+            return
+        }
+
+        lifecycleScope.launch {
+            val filas = dao.eliminarPorId(idTexto.toInt())
+            limpiarCampos()
+            if (filas == 1) {
+                toast("Cita eliminada exitosamente")
+            } else {
+                toast("No existe la cita con ese ID")
+            }
+        }
+    }
+}
+
+
