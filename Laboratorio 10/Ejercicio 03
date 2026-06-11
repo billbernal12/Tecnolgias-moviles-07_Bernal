@@ -1,1 +1,275 @@
+import 'package:flutter/material.dart';
+import 'dart:math';
 
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Calculadora',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.dark(),
+      home: const CalculadoraScreen(),
+    );
+  }
+}
+
+class CalculadoraScreen extends StatefulWidget {
+  const CalculadoraScreen({super.key});
+
+  @override
+  State<CalculadoraScreen> createState() => _CalculadoraScreenState();
+}
+
+class _CalculadoraScreenState extends State<CalculadoraScreen> {
+  String _display     = '0';
+  String _expresion   = '';
+  double _num1        = 0;
+  String _operacion   = '';
+  bool   _nuevoNumero = true;
+
+  void _presionarNumero(String valor) {
+    setState(() {
+      if (_nuevoNumero) {
+        _display     = valor == '.' ? '0.' : valor;
+        _nuevoNumero = false;
+      } else {
+        if (valor == '.' && _display.contains('.')) return;
+        _display = _display == '0' ? valor : _display + valor;
+      }
+    });
+  }
+
+  void _presionarOperacion(String op) {
+    setState(() {
+      _num1        = double.parse(_display);
+      _operacion   = op;
+      _expresion   = '$_num1 $op';
+      _nuevoNumero = true;
+    });
+  }
+
+  void _calcularResultado() {
+    if (_operacion.isEmpty) return;
+    final double num2 = double.parse(_display);
+    double resultado  = 0;
+    String error      = '';
+
+    switch (_operacion) {
+      case '+': resultado = _num1 + num2; break;
+      case '-': resultado = _num1 - num2; break;
+      case '×': resultado = _num1 * num2; break;
+      case '÷':
+        if (num2 == 0) { error = 'Error ÷ 0'; break; }
+        resultado = _num1 / num2;
+        break;
+      case '^': resultado = pow(_num1, num2).toDouble(); break;
+    }
+
+    setState(() {
+      _expresion   = '$_num1 $_operacion $num2 =';
+      _display     = error.isNotEmpty ? error : _formatearResultado(resultado);
+      _operacion   = '';
+      _nuevoNumero = true;
+    });
+  }
+
+  void _raizCuadrada() {
+    final double num = double.parse(_display);
+    setState(() {
+      if (num < 0) {
+        _expresion = '√$num =';
+        _display   = 'Error √neg';
+      } else {
+        _expresion = '√$num =';
+        _display   = _formatearResultado(sqrt(num));
+      }
+      _nuevoNumero = true;
+    });
+  }
+
+  void _limpiar() {
+    setState(() {
+      _display     = '0';
+      _expresion   = '';
+      _num1        = 0;
+      _operacion   = '';
+      _nuevoNumero = true;
+    });
+  }
+
+  void _borrar() {
+    setState(() {
+      if (_display.length <= 1 ||
+          _display == 'Error ÷ 0' ||
+          _display == 'Error √neg') {
+        _display = '0';
+      } else {
+        _display = _display.substring(0, _display.length - 1);
+      }
+    });
+  }
+
+  void _cambiarSigno() {
+    setState(() {
+      final double num = double.parse(_display);
+      _display = _formatearResultado(num * -1);
+    });
+  }
+
+  String _formatearResultado(double valor) {
+    if (valor == valor.truncateToDouble()) {
+      return valor.toInt().toString();
+    }
+    return valor.toStringAsFixed(6)
+        .replaceAll(RegExp(r'0+$'), '')
+        .replaceAll(RegExp(r'\.$'), '');
+  }
+
+  // Colores
+  static const Color _colorFuncion = Color(0xFFA5A5A5);
+  static const Color _colorOp      = Color(0xFFFF9F0A);
+  static const Color _colorNumero  = Color(0xFF333333);
+
+  // Builder de boton
+  Widget _buildBoton({
+    required String texto,
+    required VoidCallback onTap,
+    Color bgColor   = const Color(0xFF333333),
+    Color textColor = Colors.white,
+    bool esDoble    = false,
+  }) {
+    return Expanded(
+      flex: esDoble ? 2 : 1,
+      child: Padding(
+        padding: const EdgeInsets.all(5),
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            height: 58,
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                )
+              ],
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              texto,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w500,
+                color: textColor,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: SafeArea(
+        child: Column(
+          children: [
+
+            // Display
+            Expanded(
+              child: Container(
+                alignment: Alignment.bottomRight,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      _expresion,
+                      style: const TextStyle(fontSize: 20, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 6),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        _display,
+                        style: const TextStyle(
+                          fontSize: 60,
+                          fontWeight: FontWeight.w300,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            //Teclado
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 0, 10, 12),
+              child: Column(
+                children: [
+
+                  // Fila 1
+                  Row(children: [
+                    _buildBoton(texto: 'AC',  bgColor: _colorFuncion, textColor: Colors.black, onTap: _limpiar),
+                    _buildBoton(texto: '+/-', bgColor: _colorFuncion, textColor: Colors.black, onTap: _cambiarSigno),
+                    _buildBoton(texto: '⌫',   bgColor: _colorFuncion, textColor: Colors.black, onTap: _borrar),
+                    _buildBoton(texto: '÷',   bgColor: _colorOp,      onTap: () => _presionarOperacion('÷')),
+                  ]),
+
+                  // Fila 2
+                  Row(children: [
+                    _buildBoton(texto: '7', bgColor: _colorNumero, onTap: () => _presionarNumero('7')),
+                    _buildBoton(texto: '8', bgColor: _colorNumero, onTap: () => _presionarNumero('8')),
+                    _buildBoton(texto: '9', bgColor: _colorNumero, onTap: () => _presionarNumero('9')),
+                    _buildBoton(texto: '×', bgColor: _colorOp,     onTap: () => _presionarOperacion('×')),
+                  ]),
+
+                  // Fila 3
+                  Row(children: [
+                    _buildBoton(texto: '4', bgColor: _colorNumero, onTap: () => _presionarNumero('4')),
+                    _buildBoton(texto: '5', bgColor: _colorNumero, onTap: () => _presionarNumero('5')),
+                    _buildBoton(texto: '6', bgColor: _colorNumero, onTap: () => _presionarNumero('6')),
+                    _buildBoton(texto: '-', bgColor: _colorOp,     onTap: () => _presionarOperacion('-')),
+                  ]),
+
+                  // Fila 4
+                  Row(children: [
+                    _buildBoton(texto: '1', bgColor: _colorNumero, onTap: () => _presionarNumero('1')),
+                    _buildBoton(texto: '2', bgColor: _colorNumero, onTap: () => _presionarNumero('2')),
+                    _buildBoton(texto: '3', bgColor: _colorNumero, onTap: () => _presionarNumero('3')),
+                    _buildBoton(texto: '+', bgColor: _colorOp,     onTap: () => _presionarOperacion('+')),
+                  ]),
+
+                  // Fila 5
+                  Row(children: [
+                    _buildBoton(texto: '^', bgColor: _colorOp,     onTap: () => _presionarOperacion('^')),
+                    _buildBoton(texto: '0', bgColor: _colorNumero, onTap: () => _presionarNumero('0')),
+                    _buildBoton(texto: '.', bgColor: _colorNumero, onTap: () => _presionarNumero('.')),
+                    _buildBoton(texto: '√', bgColor: _colorOp,     onTap: _raizCuadrada),
+                    _buildBoton(texto: '=', bgColor: _colorOp,     onTap: _calcularResultado),
+                  ]),
+
+                ],
+              ),
+            ),
+
+          ],
+        ),
+      ),
+    );
+  }
+}
